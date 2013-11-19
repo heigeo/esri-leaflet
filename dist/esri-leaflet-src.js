@@ -3581,9 +3581,31 @@ L.esri.DynamicMapLayer = L.ImageOverlay.extend({
       if (this._image == null) {
         if(this.options.position === 'back' && this._map._panes.overlayPane.children.length){
           this._map._panes.overlayPane.insertBefore(this._newImage,this._map._panes.overlayPane.children[0]);
+        } else if (this.options.iOrder && this._map._panes.overlayPane.children.length) {
+			var order = []; // Create an array of dynamic map services that are visible
+			for (var o in overlays) { 
+				if (overlays[o].options.iOrder) {
+					drawmap.eachLayer(function(a) {
+						if (a == overlays[o])
+							order.push(overlays[o].options.iOrder);
+					});
+				}
+			}
+			if (order[0] == this.options.iOrder) { // The highest ordered visible layer will always be on top
+				this._map._panes.overlayPane.appendChild(this._newImage);
+			} else {
+				order.reverse();
+				var i = 0;
+				for (var o in order) { 
+					if (order[o] == this.options.iOrder)
+						break;
+					i++;
+				}
+				this._map._panes.overlayPane.insertBefore(this._newImage,this._map._panes.overlayPane.children[i]);
+			}
         } else {
           this._map._panes.overlayPane.appendChild(this._newImage);
-        }
+		}
       } else {
         this._map._panes.overlayPane.insertBefore(this._newImage,this._image);
         this._map._panes.overlayPane.removeChild(this._image);
